@@ -42,10 +42,12 @@ import time
 import tensorflow as tf
 
 import cifar10
-
+import wandb
+wandb.init()
+wandb.log({"A": 10})
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('train_dir', '/tmp/cifar10_train',
+tf.app.flags.DEFINE_string('train_dir', 'logs',
                            """Directory where to write event logs """
                            """and checkpoint.""")
 tf.app.flags.DEFINE_integer('max_steps', 100000,
@@ -57,6 +59,7 @@ tf.app.flags.DEFINE_integer('log_frequency', 10,
 
 
 def train():
+  wandb.config.update(FLAGS)
   """Train CIFAR-10 for a number of steps."""
   with tf.Graph().as_default():
     global_step = tf.train.get_or_create_global_step()
@@ -73,7 +76,7 @@ def train():
 
     # Calculate loss.
     loss = cifar10.loss(logits, labels)
-
+    
     # Build a Graph that trains the model with one batch of examples and
     # updates the model parameters.
     train_op = cifar10.train(loss, global_step)
@@ -101,6 +104,7 @@ def train():
 
           format_str = ('%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
                         'sec/batch)')
+          wandb.log({"loss": loss_value})
           print (format_str % (datetime.now(), self._step, loss_value,
                                examples_per_sec, sec_per_batch))
 
